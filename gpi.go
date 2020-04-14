@@ -36,10 +36,14 @@ func Classify(packet gopacket.Packet) Protocol {
     }
   }
 
-  //layer := packet.Layer(layers.LayerTypeUDP)
-  //if layer != nil {
-
-  //}
+  layer = packet.Layer(layers.LayerTypeUDP)
+  if layer != nil {
+    for _, module := range udpModules {
+      if module.Match(layer.(*layers.UDP)) {
+        return module.Protocol()
+      }
+    }
+  }
   return ProtocolUnknown
 }
 

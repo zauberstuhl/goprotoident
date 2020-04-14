@@ -18,28 +18,31 @@ package gpi
 
 import "github.com/google/gopacket/layers"
 
-const (
-  ProtocolHTTP Protocol = "HTTP"
-  ProtocolDNS Protocol = "DNS"
-  ProtocolUnknown Protocol = "UNKNOWN"
-)
+type UDPModuleDNS struct {}
 
-type Protocol string
+func (module UDPModuleDNS) Match(udp *layers.UDP) bool {
+  if udp.SrcPort != 53 && udp.DstPort != 53 {
+    return false
+  }
 
-func (protocol Protocol) String() string {
-  return string(protocol)
+  flags := udp.Payload[2:4] // 16 bit DNS flags
+  qr := int(flags[0] >> 7)
+  opcode := int(flags[0] << 1 >> 4)
+  // lets skip to the end
+  rcode := int(flags[1] >> 4)
+
+  // NOTE in theory rcode can be greater then 23 it is just unassigned currently
+  // https://www.iana.org/assignments/dns-parameters/dns-parameters.xhtml#dns-parameters-6
+  return (qr == 0 || qr == 1) &&
+    (opcode == 0 || opcode == 1 || opcode == 2) &&
+    rcode >= 0 && rcode <= 23
 }
 
-type TCPModule interface {
-  Match(*layers.TCP) bool
-  Protocol() Protocol
+func (module UDPModuleDNS) Protocol() Protocol {
+  return ProtocolDNS
 }
 
-type TCPModules []TCPModule
-
-type UDPModule interface {
-  Match(*layers.UDP) bool
-  Protocol() Protocol
+// init Register and laod the module
+func init() {
+  udpModules = append(udpModules, UDPModuleDNS{})
 }
-
-type UDPModules []UDPModule
