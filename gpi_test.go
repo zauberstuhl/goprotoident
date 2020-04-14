@@ -9,7 +9,7 @@ import (
 
 func TestMixedTraffic(t *testing.T) {
   var i int
-  handle, err := pcap.OpenOffline("samples/DNS+HTTP+HTTPS.pcap")
+  handle, err := pcap.OpenOffline("samples/DNS+HTTP+TLS.pcap")
   if err != nil {
     t.Errorf("expected nil, got %s", err.Error())
   }
@@ -43,4 +43,18 @@ func TestMixedTraffic(t *testing.T) {
   if i != 64 {
     t.Errorf("expected %d, got %d", 64, i)
   }
+}
+
+func BenchmarkMixedTraffic(b *testing.B) {
+  handle, err := pcap.OpenOffline("samples/DNS+HTTP+TLS.pcap")
+  if err != nil {
+    b.Errorf("expected nil, got %s", err.Error())
+  }
+
+  source := gopacket.NewPacketSource(handle, handle.LinkType())
+  b.Run("classify DNS, HTTP and HTTPs sample", func(b *testing.B) {
+    for packet := range source.Packets() {
+      _ = Classify(packet)
+    }
+  })
 }
