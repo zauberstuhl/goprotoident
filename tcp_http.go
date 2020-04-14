@@ -106,11 +106,6 @@ func validHTTPPorts(tcp *layers.TCP) bool {
     tcp.SrcPort == 8081 || tcp.DstPort == 8081
 }
 
-func validHTTPsPorts(tcp *layers.TCP) bool {
-  return tcp.SrcPort == 443 || tcp.DstPort == 443 ||
-    tcp.SrcPort == 8443 || tcp.DstPort == 8443
-}
-
 // init Register and laod the module
 func init() {
   tcpModules = append(tcpModules, TCPModuleHTTP{})

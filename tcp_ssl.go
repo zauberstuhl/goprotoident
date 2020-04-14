@@ -16,34 +16,39 @@ package gpi
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import "github.com/google/gopacket/layers"
+import (
+  "bytes"
 
-const (
-  ProtocolHTTP Protocol = "HTTP"
-  ProtocolTLS Protocol = "TLS"
-  ProtocolSSL Protocol = "SSL"
-  ProtocolDNS Protocol = "DNS"
-  ProtocolTCP Protocol = "TCP"
-  ProtocolUDP Protocol = "UDP"
-  ProtocolUnknown Protocol = "UNKNOWN"
+  "github.com/google/gopacket/layers"
 )
 
-type Protocol string
+type TCPModuleSSL struct {}
 
-func (protocol Protocol) String() string {
-  return string(protocol)
+func (module TCPModuleSSL) Match(tcp *layers.TCP) bool {
+  if !validHTTPsPorts(tcp) || len(tcp.Payload) < 4 {
+    return false
+  }
+
+  // SSLv3
+  if bytes.Equal(tcp.Payload[0:3], []byte{0x16, 0x03, 0x00}) {
+    return true
+  }
+
+  // SSLv2
+  if tcp.Payload[0] == 0x80 && bytes.Equal(tcp.Payload[2:4], []byte{0x01, 0x03}) {
+    return true
+  }
+  if tcp.Payload[0] == 0x81 && bytes.Equal(tcp.Payload[2:4], []byte{0x01, 0x03}) {
+    return true
+  }
+  return false
 }
 
-type TCPModule interface {
-  Match(*layers.TCP) bool
-  Protocol() Protocol
+func (module TCPModuleSSL) Protocol() Protocol {
+  return ProtocolSSL
 }
 
-type TCPModules []TCPModule
-
-type UDPModule interface {
-  Match(*layers.UDP) bool
-  Protocol() Protocol
+// init Register and laod the module
+func init() {
+  tcpModules = append(tcpModules, TCPModuleSSL{})
 }
-
-type UDPModules []UDPModule

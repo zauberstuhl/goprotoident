@@ -17,6 +17,11 @@ package gpi
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import (
+  "fmt"
+  "sync"
+  "time"
+
+  "github.com/patrickmn/go-cache"
   "github.com/google/gopacket"
   "github.com/google/gopacket/layers"
 )
@@ -24,14 +29,32 @@ import (
 var (
   tcpModules TCPModules
   udpModules UDPModules
+
+  pkgCache = cache.New(5 * time.Second, 10 * time.Second)
+  cacheMutex sync.Mutex
 )
 
 func Classify(packet gopacket.Packet) Protocol {
   layer := packet.Layer(layers.LayerTypeTCP)
   if layer != nil {
+    tcp := layer.(*layers.TCP)
+    if len(tcp.Payload) == 0 {
+      return ProtocolTCP
+    }
+
     for _, module := range tcpModules {
-      if module.Match(layer.(*layers.TCP)) {
-        return module.Protocol()
+      id := fmt.Sprintf("%d", tcp.Ack)
+      if module.Match(tcp) {
+        result := module.Protocol()
+
+        cacheMutex.Lock()
+        pkgCache.Set(id, result, cache.DefaultExpiration)
+        cacheMutex.Unlock()
+        return result
+      } else {
+        if result, ok := pkgCache.Get(id); ok {
+          return result.(Protocol)
+        }
       }
     }
   }
@@ -39,14 +62,15 @@ func Classify(packet gopacket.Packet) Protocol {
   layer = packet.Layer(layers.LayerTypeUDP)
   if layer != nil {
     for _, module := range udpModules {
-      if module.Match(layer.(*layers.UDP)) {
+      udp := layer.(*layers.UDP)
+      if len(udp.Payload) == 0 {
+        return ProtocolUDP
+      }
+
+      if module.Match(udp) {
         return module.Protocol()
       }
     }
   }
   return ProtocolUnknown
-}
-
-func PacketPorts() {
-
 }

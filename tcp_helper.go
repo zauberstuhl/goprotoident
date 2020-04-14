@@ -18,32 +18,7 @@ package gpi
 
 import "github.com/google/gopacket/layers"
 
-const (
-  ProtocolHTTP Protocol = "HTTP"
-  ProtocolTLS Protocol = "TLS"
-  ProtocolSSL Protocol = "SSL"
-  ProtocolDNS Protocol = "DNS"
-  ProtocolTCP Protocol = "TCP"
-  ProtocolUDP Protocol = "UDP"
-  ProtocolUnknown Protocol = "UNKNOWN"
-)
-
-type Protocol string
-
-func (protocol Protocol) String() string {
-  return string(protocol)
+func validHTTPsPorts(tcp *layers.TCP) bool {
+  return tcp.SrcPort == 443 || tcp.DstPort == 443 ||
+    tcp.SrcPort == 8443 || tcp.DstPort == 8443
 }
-
-type TCPModule interface {
-  Match(*layers.TCP) bool
-  Protocol() Protocol
-}
-
-type TCPModules []TCPModule
-
-type UDPModule interface {
-  Match(*layers.UDP) bool
-  Protocol() Protocol
-}
-
-type UDPModules []UDPModule
