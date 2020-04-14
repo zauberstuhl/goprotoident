@@ -41,7 +41,7 @@ func (module TCPModuleHTTP) Match(tcp *layers.TCP) bool {
 }
 
 func (module TCPModuleHTTP) Protocol() Protocol {
-  return ProtocolHttp
+  return ProtocolHTTP
 }
 
 func validHTTPResponse(tcp *layers.TCP) bool {

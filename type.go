@@ -18,12 +18,16 @@ package gpi
 
 import "github.com/google/gopacket/layers"
 
-type Protocol string
-
 const (
-  ProtocolHttp Protocol = "HTTP"
+  ProtocolHTTP Protocol = "HTTP"
   ProtocolUnknown Protocol = "UNKNOWN"
 )
+
+type Protocol string
+
+func (protocol Protocol) String() string {
+  return string(protocol)
+}
 
 type TCPModule interface {
   Match(*layers.TCP) bool
