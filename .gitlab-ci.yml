@@ -1,0 +1,9 @@
+image: golang:1.14.2
+stages:
+- test
+running unit tests:
+  stage: test
+  before_script:
+    - apt-get update
+    - apt-get install -y libpcap0.8-dev
+  script: go test
