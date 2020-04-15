@@ -7,9 +7,16 @@ import (
   "github.com/google/gopacket/pcap"
 )
 
-func TestICMPv4(t *testing.T) {
+type ProtoTest struct{
+  Expected int
+  Proto Protocol
+}
+
+type ProtoTests []ProtoTest
+
+func testPCAPFile(pkgName string, tests ProtoTests, t *testing.T) {
   var i int
-  handle, err := pcap.OpenOffline("samples/ICMPv4.pcap")
+  handle, err := pcap.OpenOffline(pkgName)
   if err != nil {
     t.Errorf("expected nil, got %s", err.Error())
   }
@@ -22,22 +29,17 @@ func TestICMPv4(t *testing.T) {
     i++
   }
 
-  protoTest := []struct{
-    Expected int
-    Proto Protocol
-  }{
-    {Expected: 6, Proto: ProtocolICMPv4},
-    {Expected: 0, Proto: ProtocolUnknown},
-  }
+  var pkgCount int
+  for _, test := range tests {
+    pkgCount += test.Expected
 
-  for _, test := range protoTest {
     if detections[test.Proto.String()] != test.Expected {
       t.Errorf("expected %d packets of type %s, got %d",
         test.Expected, test.Proto, detections[test.Proto.String()])
     }
   }
 
-  if i != 6 {
-    t.Errorf("expected %d, got %d", 6, i)
+  if i != pkgCount {
+    t.Errorf("expected %d, got %d", pkgCount, i)
   }
 }

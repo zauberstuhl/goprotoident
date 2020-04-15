@@ -7,25 +7,19 @@ import (
   "github.com/google/gopacket/pcap"
 )
 
-func TestMixedTraffic(t *testing.T) {
-  var i int
-  handle, err := pcap.OpenOffline("samples/DNS+HTTP+TLS.pcap")
-  if err != nil {
-    t.Errorf("expected nil, got %s", err.Error())
+func TestMixedTraffic_SMTP_TLS(t *testing.T) {
+  tests := ProtoTests{
+    {Expected: 14, Proto: ProtocolTCP},
+    {Expected: 5, Proto: ProtocolSMTP},
+    {Expected: 17, Proto: ProtocolTLS},
+    {Expected: 0, Proto: ProtocolUnknown},
   }
 
-  detections := make(map[string]int)
-  source := gopacket.NewPacketSource(handle, handle.LinkType())
-  for packet := range source.Packets() {
-    detection := Classify(packet)
-    detections[detection.String()] += 1
-    i++
-  }
+  testPCAPFile("samples/SMTP+TLS.pcap", tests, t)
+}
 
-  protoTest := []struct{
-    Expected int
-    Proto Protocol
-  }{
+func TestMixedTraffic_DNS_HTTP_TLS(t *testing.T) {
+  tests := ProtoTests{
     {Expected: 8, Proto: ProtocolDNS},
     {Expected: 32, Proto: ProtocolTCP},
     {Expected: 2, Proto: ProtocolHTTP},
@@ -33,16 +27,7 @@ func TestMixedTraffic(t *testing.T) {
     {Expected: 0, Proto: ProtocolUnknown},
   }
 
-  for _, test := range protoTest {
-    if detections[test.Proto.String()] != test.Expected {
-      t.Errorf("expected %d packets of type %s, got %d",
-        test.Expected, test.Proto, detections[test.Proto.String()])
-    }
-  }
-
-  if i != 64 {
-    t.Errorf("expected %d, got %d", 64, i)
-  }
+  testPCAPFile("samples/DNS+HTTP+TLS.pcap", tests, t)
 }
 
 func BenchmarkMixedTraffic(b *testing.B) {
