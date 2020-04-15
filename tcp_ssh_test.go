@@ -7,9 +7,9 @@ import (
   "github.com/google/gopacket/pcap"
 )
 
-func TestTCPTLS(t *testing.T) {
+func TestTCPSSH(t *testing.T) {
   var i int
-  handle, err := pcap.OpenOffline("samples/TLS.pcap")
+  handle, err := pcap.OpenOffline("samples/SSH.pcap")
   if err != nil {
     t.Errorf("expected nil, got %s", err.Error())
   }
@@ -26,8 +26,8 @@ func TestTCPTLS(t *testing.T) {
     Expected int
     Proto Protocol
   }{
-    {Expected: 26, Proto: ProtocolTCP},
-    {Expected: 24, Proto: ProtocolTLS},
+    {Expected: 25, Proto: ProtocolTCP},
+    {Expected: 13, Proto: ProtocolSSH},
     {Expected: 0, Proto: ProtocolUnknown},
   }
 
@@ -38,7 +38,7 @@ func TestTCPTLS(t *testing.T) {
     }
   }
 
-  if i != 50 {
-    t.Errorf("expected %d, got %d", 50, i)
+  if i != 38 {
+    t.Errorf("expected %d, got %d", 38, i)
   }
 }

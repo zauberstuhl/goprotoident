@@ -16,35 +16,31 @@ package gpi
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import "github.com/google/gopacket/layers"
+import (
+  "bytes"
 
-const (
-  ProtocolHTTP Protocol = "HTTP"
-  ProtocolTLS Protocol = "TLS"
-  ProtocolSSL Protocol = "SSL"
-  ProtocolSSH Protocol = "SSH"
-  ProtocolDNS Protocol = "DNS"
-  ProtocolTCP Protocol = "TCP"
-  ProtocolUDP Protocol = "UDP"
-  ProtocolUnknown Protocol = "UNKNOWN"
+  "github.com/google/gopacket/layers"
 )
 
-type Protocol string
+type TCPModuleSSH struct {}
 
-func (protocol Protocol) String() string {
-  return string(protocol)
+func (module TCPModuleSSH) Match(tcp *layers.TCP) bool {
+  if bytes.Equal(tcp.Payload[0:4], []byte("SSH-")) {
+    return true
+  }
+
+  //if tcp.SrcPort == 22 || tcp.DstPort != 22 {
+  //  return false
+  //}
+
+  return false
 }
 
-type TCPModule interface {
-  Match(*layers.TCP) bool
-  Protocol() Protocol
+func (module TCPModuleSSH) Protocol() Protocol {
+  return ProtocolSSH
 }
 
-type TCPModules []TCPModule
-
-type UDPModule interface {
-  Match(*layers.UDP) bool
-  Protocol() Protocol
+// init Register and laod the module
+func init() {
+  tcpModules = append(tcpModules, TCPModuleSSH{})
 }
-
-type UDPModules []UDPModule

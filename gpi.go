@@ -42,21 +42,26 @@ func Classify(packet gopacket.Packet) Protocol {
       return ProtocolTCP
     }
 
+    result := ProtocolUnknown
     for _, module := range tcpModules {
-      id := fmt.Sprintf("%d", tcp.Ack)
       if module.Match(tcp) {
-        result := module.Protocol()
-
-        cacheMutex.Lock()
-        pkgCache.Set(id, result, cache.DefaultExpiration)
-        cacheMutex.Unlock()
-        return result
-      } else {
-        if result, ok := pkgCache.Get(id); ok {
-          return result.(Protocol)
-        }
+        result = module.Protocol()
+        break
       }
     }
+
+    if result == ProtocolUnknown {
+      if cachedResult, ok := pkgCache.Get(fmt.Sprintf("%d", tcp.Seq)); ok {
+        result = cachedResult.(Protocol)
+      }
+    }
+
+    cacheMutex.Lock()
+    nextSeq := tcp.Seq + uint32(len(tcp.Payload))
+    pkgCache.Set(fmt.Sprintf("%d", nextSeq), result, cache.DefaultExpiration)
+    cacheMutex.Unlock()
+
+    return result
   }
 
   layer = packet.Layer(layers.LayerTypeUDP)
