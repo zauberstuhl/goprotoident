@@ -25,7 +25,7 @@ import (
 type TCPModuleTLS struct {}
 
 func (module TCPModuleTLS) Match(tcp *layers.TCP) bool {
-  if !validHTTPsPorts(tcp) || len(tcp.Payload) < 4 {
+  if len(tcp.Payload) < 4 {
     return false
   }
 

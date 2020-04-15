@@ -24,8 +24,3 @@ func validSMTPPorts(tcp *layers.TCP) bool {
     tcp.SrcPort == 587 || tcp.DstPort == 587 ||
     tcp.SrcPort == 2525 || tcp.DstPort == 2525
 }
-
-func validHTTPsPorts(tcp *layers.TCP) bool {
-  return tcp.SrcPort == 443 || tcp.DstPort == 443 ||
-    tcp.SrcPort == 8443 || tcp.DstPort == 8443
-}

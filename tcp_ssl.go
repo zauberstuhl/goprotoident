@@ -25,10 +25,6 @@ import (
 type TCPModuleSSL struct {}
 
 func (module TCPModuleSSL) Match(tcp *layers.TCP) bool {
-  if !validHTTPsPorts(tcp) || len(tcp.Payload) < 4 {
-    return false
-  }
-
   // SSLv3
   if bytes.Equal(tcp.Payload[0:3], []byte{0x16, 0x03, 0x00}) {
     return true
