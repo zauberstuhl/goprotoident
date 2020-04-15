@@ -63,6 +63,8 @@ func Classify(packet gopacket.Packet) Protocol {
     if result == ProtocolUnknown {
       if cachedResult, ok := pkgCache.Get(fmt.Sprintf("%d", tcp.Seq)); ok {
         result = cachedResult.(Protocol)
+      } else {
+        result = ProtocolTCP
       }
     }
 
@@ -76,16 +78,17 @@ func Classify(packet gopacket.Packet) Protocol {
 
   layer = packet.Layer(layers.LayerTypeUDP)
   if layer != nil {
-    for _, module := range udpModules {
-      udp := layer.(*layers.UDP)
-      if len(udp.Payload) == 0 {
-        return ProtocolUDP
-      }
+    udp := layer.(*layers.UDP)
+    if len(udp.Payload) == 0 {
+      return ProtocolUDP
+    }
 
+    for _, module := range udpModules {
       if module.Match(udp) {
         return module.Protocol()
       }
     }
+    return ProtocolUDP
   }
   return ProtocolUnknown
 }
