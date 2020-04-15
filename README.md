@@ -18,7 +18,7 @@ See [godoc](https://godoc.org/git.feneas.org/fengg/goprotoident) for more detail
 - [ ] RPC
 - [ ] RDP
 - [ ] SMB
-- [ ] FTP
+- [X] FTP
 - [ ] NetBIOS
 - [ ] JABBER
 - [ ] MQTT
