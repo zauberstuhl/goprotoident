@@ -19,6 +19,8 @@ package gpi
 import "github.com/google/gopacket/layers"
 
 const (
+  ProtocolICMPv4 Protocol = "ICMPv4"
+  ProtocolICMPv6 Protocol = "ICMPv6"
   ProtocolHTTP Protocol = "HTTP"
   ProtocolTLS Protocol = "TLS"
   ProtocolSSL Protocol = "SSL"

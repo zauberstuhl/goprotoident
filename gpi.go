@@ -35,7 +35,17 @@ var (
 )
 
 func Classify(packet gopacket.Packet) Protocol {
-  layer := packet.Layer(layers.LayerTypeTCP)
+  layer := packet.Layer(layers.LayerTypeICMPv4)
+  if layer != nil {
+    return ProtocolICMPv4
+  }
+
+  layer = packet.Layer(layers.LayerTypeICMPv6)
+  if layer != nil {
+    return ProtocolICMPv6
+  }
+
+  layer = packet.Layer(layers.LayerTypeTCP)
   if layer != nil {
     tcp := layer.(*layers.TCP)
     if len(tcp.Payload) == 0 {
