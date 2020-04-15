@@ -25,14 +25,13 @@ import (
 type TCPModuleSSH struct {}
 
 func (module TCPModuleSSH) Match(tcp *layers.TCP) bool {
+  if len(tcp.Payload) < 4 {
+    return false
+  }
+
   if bytes.Equal(tcp.Payload[0:4], []byte("SSH-")) {
     return true
   }
-
-  //if tcp.SrcPort == 22 || tcp.DstPort != 22 {
-  //  return false
-  //}
-
   return false
 }
 

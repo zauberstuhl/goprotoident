@@ -25,6 +25,7 @@ const (
   ProtocolTLS Protocol = "TLS"
   ProtocolSSL Protocol = "SSL"
   ProtocolSSH Protocol = "SSH"
+  ProtocolSMTP Protocol = "SMTP"
   ProtocolDNS Protocol = "DNS"
   ProtocolTCP Protocol = "TCP"
   ProtocolUDP Protocol = "UDP"
