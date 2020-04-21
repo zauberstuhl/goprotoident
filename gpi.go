@@ -34,6 +34,39 @@ var (
   cacheMutex sync.Mutex
 )
 
+// ClassifyByPorts will return protocol associated by the standard
+// port mapping. This can be seen as fallback option in case e.g.
+// the packet inspection of Classify returns ProtocolUnknown.
+func ClassifyByPorts(packet gopacket.Packet) Protocol {
+  layer := packet.Layer(layers.LayerTypeTCP)
+  if layer != nil {
+    tcp := layer.(*layers.TCP)
+    if protocol, ok := tcpPorts[tcp.DstPort]; ok {
+      return protocol
+    }
+    if protocol, ok := tcpPorts[tcp.SrcPort]; ok {
+      return protocol
+    }
+    return ProtocolTCP
+  }
+
+  layer = packet.Layer(layers.LayerTypeUDP)
+  if layer != nil {
+    udp := layer.(*layers.UDP)
+    if protocol, ok := udpPorts[udp.SrcPort]; ok {
+      return protocol
+    }
+    if protocol, ok := udpPorts[udp.DstPort]; ok {
+      return protocol
+    }
+    return ProtocolUDP
+  }
+  return ProtocolUnknown
+}
+
+// Classify tries to identify network traffic by doing spot
+// checks of the provided packet. The function will cache
+// certain packages to improve detection rate
 func Classify(packet gopacket.Packet) Protocol {
   layer := packet.Layer(layers.LayerTypeICMPv4)
   if layer != nil {

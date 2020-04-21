@@ -19,8 +19,10 @@ type ProtoTests []ProtoTest
 func (tests ProtoTests) String() string {
   var result strings.Builder
   for i, test := range tests {
-    result.WriteString(
-      fmt.Sprintf("#%d\t%s found\t%d time(s)\n", i, test.Proto, test.Expected))
+    if test.Expected > 0 {
+      result.WriteString(
+        fmt.Sprintf("#%d\t%s found\t%d time(s)\n", i, test.Proto, test.Expected))
+    }
   }
   return result.String()
 }
@@ -39,6 +41,14 @@ func testPCAPFile(pkgName string, tests ProtoTests, t *testing.T) {
     { Proto: ProtocolTCP, Expected: 0 },
     { Proto: ProtocolUDP, Expected: 0 },
     { Proto: ProtocolUnknown, Expected: 0 },
+  }
+
+  for _, protocol := range tcpPorts {
+    protocols = append(protocols, ProtoTest{ Proto: protocol, Expected: 0 })
+  }
+
+  for _, protocol := range udpPorts {
+    protocols = append(protocols, ProtoTest{ Proto: protocol, Expected: 0 })
   }
 
   var packetCount int
